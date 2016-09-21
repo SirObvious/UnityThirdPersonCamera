@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour {
 
     //Public Parameter
     public float rotationSpeed;
+    public float maxDistanceToPlayer;
 
 
 	void Start () {
@@ -19,8 +20,8 @@ public class CameraController : MonoBehaviour {
         Vector2 axisInput = GetAnalogInput();
         RotationHorizontal(axisInput.x);
         RotationVertical(axisInput.y);
+        //TranslateToMaxDistance();
         LookAtPlayer();
-
 	}
 
 
@@ -39,6 +40,19 @@ public class CameraController : MonoBehaviour {
     private void RotationVertical(float verticalInput)
     {
         this.transform.RotateAround(playerTransform.position, Vector3.right, rotationSpeed * verticalInput * Time.deltaTime);
+    }
+
+    private void TranslateToMaxDistance()
+    {
+        float distanceDelta = maxDistanceToPlayer - Vector3.Distance(this.transform.position, playerTransform.position);
+        Vector3 directionPlayerToCamera = (this.transform.position - playerTransform.position).normalized;
+        if(distanceDelta < 0f)
+        {
+            this.transform.Translate(directionPlayerToCamera * distanceDelta);
+        } else
+        {
+            this.transform.Translate(directionPlayerToCamera * distanceDelta);
+        }
     }
 
     private void LookAtPlayer()
