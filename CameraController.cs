@@ -7,20 +7,19 @@ public class CameraController : MonoBehaviour {
     public Transform playerTransform;
 
     //Public Parameter
-    public float rotationSpeed;
-    public float maxDistanceToPlayer;
-
+    public float maxDistanceToPlayer = 3f;
+    public float smoothFactor = 2f; 
+    public float rotationSpeed = 140f;
 
 	void Start () {
 	
 	}
 	
-	
 	void Update () {
         Vector2 axisInput = GetAnalogInput();
         RotationHorizontal(axisInput.x);
         RotationVertical(axisInput.y);
-        //TranslateToMaxDistance();
+        TranslateToMaxDistance();
         LookAtPlayer();
 	}
 
@@ -39,28 +38,28 @@ public class CameraController : MonoBehaviour {
 
     private void RotationVertical(float verticalInput)
     {
-        this.transform.RotateAround(playerTransform.position, Vector3.right, rotationSpeed * verticalInput * Time.deltaTime);
-    }
-
-    private void TranslateToMaxDistance()
-    {
-        float distanceDelta = maxDistanceToPlayer - Vector3.Distance(this.transform.position, playerTransform.position);
-        Vector3 directionPlayerToCamera = (this.transform.position - playerTransform.position).normalized;
-        if(distanceDelta < 0f)
-        {
-            this.transform.Translate(directionPlayerToCamera * distanceDelta);
-        } else
-        {
-            this.transform.Translate(directionPlayerToCamera * distanceDelta);
-        }
+        this.transform.RotateAround(playerTransform.position, this.transform.right, rotationSpeed * verticalInput * Time.deltaTime);
     }
 
     private void LookAtPlayer()
     {
-        this.transform.LookAt(playerTransform.position);
+        Quaternion targetRotation = Quaternion.LookRotation(playerTransform.position - this.transform.position);
+        this.transform.rotation = Quaternion.Slerp(this.transform.rotation, targetRotation, Time.deltaTime * smoothFactor);
+        //this.transform.LookAt(playerTransform.position);
     }
 
-
+    private void TranslateToMaxDistance()
+    {
+         float distanceDelta = Vector3.Distance(this.transform.position, playerTransform.position) - maxDistanceToPlayer;
+         Vector3 directionCamToPlayer = new Vector3(this.playerTransform.position.x - this.transform.position.x,
+                                                    0f,
+                                                    this.playerTransform.position.z - this.transform.position.z);
+         if(distanceDelta > 0f)
+         {
+            this.transform.position = Vector3.Lerp(this.transform.position, this.transform.position + (directionCamToPlayer.normalized * distanceDelta), Time.deltaTime * smoothFactor);
+         } 
+    }
+    
 
 
 }
